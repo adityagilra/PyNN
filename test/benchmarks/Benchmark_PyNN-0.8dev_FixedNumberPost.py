@@ -34,7 +34,7 @@ import socket
 from math import *
 import json
 from pyNN.utility import get_script_args
-simulator_name = 'neuron'
+simulator_name = 'nest'
 exec("from pyNN.%s import *" % simulator_name)
 try:
     from mpi4py import MPI
