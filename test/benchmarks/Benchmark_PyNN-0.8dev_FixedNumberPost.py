@@ -34,9 +34,8 @@ import socket
 from math import *
 import json
 from pyNN.utility import get_script_args
-simulator_name = 'nest'
-from pyNN.nest import *
-#exec("from pyNN.%s import *" % simulator_name)
+simulator_name = 'neuron'
+exec("from pyNN.%s import *" % simulator_name)
 try:
     from mpi4py import MPI
     USE_MPI = True
@@ -113,34 +112,34 @@ ii_conn = FixedNumberPostConnector(n_conn_out)#, weights=weight, delays=delay)
 times['t_connector'] = timer.diff()
 
 connections={}
-connections['e2e'] = Projection(exc_cells, exc_cells, ee_conn, receptor_type='excitatory')#, rng=rng)
-connections['e2i'] = Projection(exc_cells, inh_cells, ei_conn, receptor_type='excitatory')#, rng=rng)
-connections['i2e'] = Projection(inh_cells, exc_cells, ie_conn, receptor_type='inhibitory')#, rng=rng)
-connections['i2i'] = Projection(inh_cells, inh_cells, ii_conn, receptor_type='inhibitory')#, rng=rng)
-connections['e2e'].set(weight=weight)
-connections['e2i'].set(weight=weight)
-connections['i2e'].set(weight=weight)
-connections['i2i'].set(weight=weight)
+connections['e2e'] = Projection(exc_cells, exc_cells, ee_conn, synapse_type=StaticSynapse(weight=weight), receptor_type='excitatory')#, rng=rng)
+connections['e2i'] = Projection(exc_cells, inh_cells, ei_conn, synapse_type=StaticSynapse(weight=weight), receptor_type='excitatory')#, rng=rng)
+connections['i2e'] = Projection(inh_cells, exc_cells, ie_conn, synapse_type=StaticSynapse(weight=weight), receptor_type='inhibitory')#, rng=rng)
+connections['i2i'] = Projection(inh_cells, inh_cells, ii_conn, synapse_type=StaticSynapse(weight=weight), receptor_type='inhibitory')#, rng=rng)
+#connections['e2e'].set(weight=weight)
+#connections['e2i'].set(weight=weight)
+#connections['i2e'].set(weight=weight)
+#connections['i2i'].set(weight=weight)
 times['t_projection'] = timer.diff()
 
 exc_noise_connector = OneToOneConnector()
 inh_noise_connector = OneToOneConnector()
 
-noise_ee_prj = Projection(exc_noise_in_exc, exc_cells, exc_noise_connector, receptor_type="excitatory")
-noise_ei_prj = Projection(exc_noise_in_inh, inh_cells, exc_noise_connector, receptor_type="excitatory")
-noise_ie_prj = Projection(inh_noise_in_exc, exc_cells, inh_noise_connector, receptor_type="inhibitory")
-noise_ii_prj = Projection(inh_noise_in_inh, inh_cells, inh_noise_connector, receptor_type="inhibitory")
-noise_ee_prj.set(weight=w_noise_exc)
-noise_ei_prj.set(weight=w_noise_exc)
-noise_ie_prj.set(weight=w_noise_inh)
-noise_ii_prj.set(weight=w_noise_inh)
+noise_ee_prj = Projection(exc_noise_in_exc, exc_cells, exc_noise_connector, synapse_type=StaticSynapse(weight=w_noise_exc), receptor_type="excitatory")
+noise_ei_prj = Projection(exc_noise_in_inh, inh_cells, exc_noise_connector, synapse_type=StaticSynapse(weight=w_noise_exc), receptor_type="excitatory")
+noise_ie_prj = Projection(inh_noise_in_exc, exc_cells, inh_noise_connector, synapse_type=StaticSynapse(weight=w_noise_inh), receptor_type="inhibitory")
+noise_ii_prj = Projection(inh_noise_in_inh, inh_cells, inh_noise_connector, synapse_type=StaticSynapse(weight=w_noise_inh), receptor_type="inhibitory")
+#noise_ee_prj.set(weight=w_noise_exc)
+#noise_ei_prj.set(weight=w_noise_exc)
+#noise_ie_prj.set(weight=w_noise_inh)
+#noise_ii_prj.set(weight=w_noise_inh)
 times['t_connect_noise'] = timer.diff()
 
 
 # === Setup recording ==========================================================
 print "%s Setting up recording..." % node_id
-exc_cells.record()
-inh_cells.record()
+exc_cells.record('spikes')
+inh_cells.record('spikes')
 cells_to_record = range(n_cells_to_record)
 exc_cells[cells_to_record].record_v()
 times['t_record'] = timer.diff()
@@ -164,13 +163,17 @@ times['t_run'] = timer.diff()
 
 
 # === Print results to file ====================================================
-exc_spike_fn = "%s/VAbenchmark_%s_exc_%s_np%d_%d.ras" % (folder_name, benchmark, simulator_name, np, node_id)
-exc_cells.printSpikes(exc_spike_fn, gather=gather)
-print "%d Print inh spikes to file..." % node_id
-inh_spike_fn = "%s/VAbenchmark_%s_inh_%s_np%d_%d.ras" % (folder_name, benchmark, simulator_name, np, node_id)
-inh_cells.printSpikes(inh_spike_fn, gather=gather)
+exc_spike_fn = "%s/VAbenchmark_%s_exc_%s_np%d_%d.pkl" % (folder_name, benchmark, simulator_name, np, node_id)
+exc_volt_fn = "%s/VAbenchmark_%s_exc_%s_np%d_%d_v.pkl" % (folder_name, benchmark, simulator_name, np, node_id)
+#exc_cells.write_data(exc_spike_fn, 'spikes', gather=gather)
+exc_cells.write_data(exc_spike_fn, 'spikes', gather=gather)
+#print "%d Print inh spikes to file..." % node_id
+#inh_spike_fn = "%s/VAbenchmark_%s_inh_%s_np%d_%d.pkl" % (folder_name, benchmark, simulator_name, np, node_id)
+#inh_cells.printSpikes(inh_spike_fn, gather=gather)
+#exc_cells.write_data(exc_spike_fn, 'spikes', gather=gather)
 print "%d Print voltage to file..." % node_id
-exc_cells[cells_to_record].print_v("%s/VAbenchmark_%s_exc_%s_np%d_%d.v" % (folder_name, benchmark, simulator_name, np, node_id), gather=gather)
+exc_cells.write_data(exc_volt_fn, 'v', gather=gather)
+
 times['t_printSpikes'] = timer.diff()
 
 # === Load spike file and calculate conductances ====================
