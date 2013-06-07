@@ -139,7 +139,7 @@ class Population(common.Population, PopulationMixin):
 
     def _set_initial_value_array(self, variable, value):
         variable = STATE_VARIABLE_MAP.get(variable, variable)
-        if isinstance(value.base_value, RandomDistribution) and value.base_value.rng.parallel_safe:
+        if isinstance(value.base_value, RandomDistribution) and getattr(value.base_value.rng, 'parallel_safe', None):
             local_values = value.evaluate()[self._mask_local]
         else:
             local_values = value._partially_evaluate(self._mask_local, simplify=True)
