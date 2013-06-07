@@ -186,7 +186,41 @@ class RandomDistributionTests(unittest.TestCase):
                                        constrain=None)
         self.assertRaises(Exception, rd.next)
 
+
+class WrappedRNGGSLTests(unittest.TestCase):
+
+    def test_default_construction(self):
+        a = random.WrappedGSLRNG()
+
+    def test_reference_construction(self):
+        a = random.WrappedGSLRNG()
+        b = random.WrappedGSLRNG(rng = a.rng)
+        self.assertEqual(a.seed, b.seed)
+
+    def test_seeded_construction(self):
+        b = random.WrappedGSLRNG(123)
+
+    def test_typed_construction(self):
+        c = random.WrappedGSLRNG(type='mt19937')
+        c = random.WrappedGSLRNG(type='rand48')
+
+    def test_typed_usage(self):
+        a = random.WrappedGSLRNG()
+        a.next(distribution='beta', n=10, parameters=[1,2])
+
+    def test_seeded_usage(self):
+        a = random.WrappedGSLRNG(123)
+        b = random.WrappedGSLRNG(123)
+        a.next()
+        a.next(10)
+
+        b.next()
+        b.next(10)
+
+        for i in xrange(0, 100):
+            self.assertEqual(a.next(), b.next())
+
 # ==============================================================================            
 if __name__ == "__main__":
     unittest.main()      
-  
+ 

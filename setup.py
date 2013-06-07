@@ -2,6 +2,8 @@
 
 from distutils.core import setup
 from distutils.command.build import build as _build
+from distutils.extension import Extension
+from Cython.Distutils import build_ext
 import os
 
 class build(_build):
@@ -37,7 +39,7 @@ class build(_build):
                 nrnivmodl = abs_name
                 break
         return nrnivmodl
-      
+
 setup(
     name = "PyNN",
     version = "0.8dev",
@@ -48,6 +50,8 @@ setup(
                 'pyNN.nest.standardmodels', 'pyNN.pcsim.standardmodels',
                 'pyNN.neuron.standardmodels', 'pyNN.brian.standardmodels', 'pyNN.nemo.standardmodels'],
     package_data = {'pyNN': ['neuron/nmodl/*.mod', "descriptions/templates/*/*"]},
+    ext_modules = [Extension("wrap_gsl_rng", ["src/wrap_gsl_rng/wrap_gsl_rng.pyx"],
+                   libraries=["gsl","gslcblas"])],
     author = "The PyNN team",
     author_email = "andrew.davison@unic.cnrs-gif.fr",
     description = "A Python package for simulator-independent specification of neuronal network models",
@@ -73,6 +77,6 @@ PyNN is a work in progress, but is already being used for several large-scale si
                    'Operating System :: OS Independent',
                    'Programming Language :: Python',
                    'Topic :: Scientific/Engineering'],
-    cmdclass = {'build': build},
+    cmdclass = {'build': build, 'build_ext': build_ext},
 )
 

@@ -7,3 +7,4 @@ numpy>=1.5
 quantities>=0.10
 lazyarray>=0.2.2
 neo>0.2.1
+Cython>0.15

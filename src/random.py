@@ -24,6 +24,7 @@ from copy import deepcopy
 import logging
 import numpy.random
 from lazyarray import VectorizedIterable
+from wrap_gsl_rng import wrap_gsl_rng
 
 try:
     import pygsl.rng
@@ -172,6 +173,20 @@ class GSLRNG(WrappedRNG):
         if n == 1:
             values = [values]  # to be consistent with NumpyRNG
         return values
+
+
+class WrappedGSLRNG(AbstractRNG):
+    """Wrapper for C gsl_rng struct and functions"""
+    rng = None
+    seed = None
+    def __init__(self, seed=None, type='mt19937', rng=None):
+        if rng:
+            self.rng = rng
+        else:
+            self.rng = wrap_gsl_rng(seed, type)
+        self.seed = self.rng.seed
+    def next(self, n=1, distribution='uniform', parameters=[]):
+        return self.rng.next(n, distribution, parameters)
 
 
 # should add a wrapper for the built-in Python random module.
