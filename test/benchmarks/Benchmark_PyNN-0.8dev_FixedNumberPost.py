@@ -36,16 +36,6 @@ import json
 from pyNN.utility import get_script_args
 simulator_name = get_script_args(1)[0]
 exec("from pyNN.%s import *" % simulator_name)
-try:
-    from mpi4py import MPI
-    USE_MPI = True
-    comm = MPI.COMM_WORLD
-    node_id, n_proc = comm.rank, comm.size
-    print "USE_MPI:", USE_MPI, 'pc_id, n_proc:', node_id, n_proc
-except:
-    USE_MPI = False
-    node_id, n_proc, comm = 0, 1, None
-    print "MPI not used"
 
 from pyNN.random import NumpyRNG, NativeRNG, RandomDistribution
 times['t_import'] = timer.diff()
