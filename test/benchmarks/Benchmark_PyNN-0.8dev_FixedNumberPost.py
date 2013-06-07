@@ -47,7 +47,7 @@ except:
     node_id, n_proc, comm = 0, 1, None
     print "MPI not used"
 
-from pyNN.random import NumpyRNG, RandomDistribution
+from pyNN.random import NumpyRNG, NativeRNG, RandomDistribution
 times['t_import'] = timer.diff()
 
 # === DEFINE PARAMETERS 
@@ -98,7 +98,8 @@ inh_noise_in_inh = Population(n_inh, SpikeSourcePoisson, {'rate' : f_noise_inh})
 times['t_create_noise'] = timer.diff()
 
 print "%s Initialising membrane potential to random values..." % node_id
-rng = NumpyRNG(seed=rngseed, parallel_safe=parallel_safe)
+#rng = NumpyRNG(seed=rngseed, parallel_safe=parallel_safe)
+rng = NativeRNG(seed=rngseed)
 uniformDistr = RandomDistribution('uniform', [-50, -70], rng=rng)
 exc_cells.initialize(v=uniformDistr)
 inh_cells.initialize(v=uniformDistr)
