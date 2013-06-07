@@ -14,7 +14,7 @@ for fname in os.listdir('.'):
 
 
 # Eric's decoration helper for parameterized unittests
-def parameterized_test(*params):
+def _parameterized_test(*params):
     def deco(method, params=params):
         for p in params:
             pname = re.sub('[^-_a-zA-Z0-9]', '', str(p))
@@ -44,7 +44,7 @@ def queue_slurm_job(fname):
 
 
 class Benchmarks(unittest.TestCase):
-    @parameterized_test(*benchmarks)
+    @_parameterized_test(*benchmarks)
     def test_scaling(self, script):
         job_file = create_slurm_job_file(script)
         queue_slurm_job(job_file)
