@@ -175,18 +175,19 @@ class GSLRNG(WrappedRNG):
         return values
 
 
-class WrappedGSLRNG(AbstractRNG):
+class WrappedGSLRNG(WrappedRNG):
     """Wrapper for C gsl_rng struct and functions"""
     rng = None
     seed = None
-    def __init__(self, seed=None, type='mt19937', rng=None):
+    parallel_safe = False # TODO
+    def __init__(self, seed=None, type='mt19937', parallel_safe=None, rng=None):
         if rng:
             self.rng = rng
         else:
             self.rng = wrap_gsl_rng(seed, type)
         self.seed = self.rng.seed
-    def next(self, n=1, distribution='uniform', parameters=[]):
-        return self.rng.next(n, distribution, parameters)
+    def _next(self, n=1, distribution='uniform', parameters=[], mask_local=None):
+        return self.rng.next(n, distribution, parameters, mask_local)
 
 
 # should add a wrapper for the built-in Python random module.

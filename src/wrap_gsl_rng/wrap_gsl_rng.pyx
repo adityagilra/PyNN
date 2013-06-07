@@ -15,7 +15,7 @@ cdef class wrap_gsl_rng:
         elif type == 'rand48':
             self._c_T = cgsl_rng.gsl_rng_rand48
         else:
-            raise 'rng type not implemented'
+            raise RuntimeError('rng type not implemented')
         
         self._c_r = cgsl_rng.gsl_rng_alloc(self._c_T)
 
@@ -27,13 +27,13 @@ cdef class wrap_gsl_rng:
         cgsl_rng.gsl_rng_set(self._c_r, self.seed)
 
 
-    def next(self, n=1, distribution='uniform', parameters=[], mask_local=None):
+    def next(self, distribution='uniform', n=1, parameters=[], mask_local=None):
         if mask_local:
-            raise "not implemented"
+            raise RuntimeError("not implemented")
         # ugly, but reflection doesnt work and function refs in dict fail too
         if distribution == 'uniform':
-            return [ cgsl_rng.gsl_rng_uniform(self._c_r) for i in xrange(0, n) ]
+            return [ cgsl_rng.gsl_ran_flat(self._c_r, parameters[0], parameters[1]) for i in xrange(0, n) ]
         elif distribution == 'beta':
             return [ cgsl_rng.gsl_ran_beta(self._c_r, parameters[0], parameters[1]) for i in xrange(0, n) ]
         else:
-            raise 'distribution not implemented'
+            raise RuntimeError('distribution %s not implemented' % distribution)
